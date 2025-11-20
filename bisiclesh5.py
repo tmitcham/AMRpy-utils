@@ -64,7 +64,7 @@ class bisicles_hf5:
         count += 1
 
       if count == n_components:
-        count = np.NaN
+        count = np.nan
         print('string not found')
 
       return count
@@ -129,7 +129,7 @@ class bisicles_hf5:
     levelsdata = []
 
     # crrate a time variable in case it isnt picked up from level info
-    time = np.NAN
+    time = np.nan
 
     # visit each level in turn coarse to fine
     for level in range(n_level):
@@ -231,7 +231,7 @@ class bisicles_hf5:
     self.y = levelsy # as list of arrays [level][box]
     self.data = levelsdata # data for each level as list of arrays [level][box]
 
-  def flatten(self,lev=-1,xmin=np.NAN,xmax=np.NAN,ymin=np.NAN,ymax=np.NAN):
+  def flatten(self,lev=-1,xmin=np.nan,xmax=np.nan,ymin=np.nan,ymax=np.nan):
 
     class flat:
 
@@ -343,7 +343,7 @@ class bisicles_hf5:
 
     return flat(self.fname,self.time,self.variable_name,self.full_name,self.units,self.dx[lev],xx,yy,data)
 
-  def plot(self,datamin=np.NAN,datamax=np.NAN,levelmax=999):
+  def plot(self,datamin=np.nan,datamax=np.nan,levelmax=999):
 
     def minmax(data):
 
