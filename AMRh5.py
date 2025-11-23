@@ -32,18 +32,21 @@ class AMRh5:
 
     def open(self):
 
+        print(f"Opening file: {self.filename}")
         self.file = h5py.File(self.filename, 'r')
         if self.file is None:
             raise RuntimeError(f"Could not open file: {self.filename}")
         
     def close(self):
 
+        print(f"Closing file: {self.filename}")
         if self.file is not None:
             self.file.close()
             self.file = None
 
     def find_var(self, n_components):
 
+        print(f"Finding variable '{self.variable_name}' in the file.")
         count = 0
 
         while count < n_components and self.file.attrs['component_'+str(count)].decode('utf-8') != self.variable_name:
@@ -52,9 +55,17 @@ class AMRh5:
         if count == n_components:
             count = np.nan
             raise KeyError(f"Variable '{self.variable_name}' not found in the HDF5 file.")
+        
+        print(f"Variable '{self.variable_name}' found at component index: {count}")
+
         return count
 
     def read_var(self, target_component):
+
+        if self.file is None:
+            raise RuntimeError("HDF5 file is not opened.")
+        
+        print(f"Reading variable '{self.variable_name}' at component index: {target_component}")
 
         n_level = self.file.attrs['num_levels']
 
@@ -72,6 +83,8 @@ class AMRh5:
 
         # visit each level in turn coarse to fine
         for level in range(n_level):
+
+            print(f"Processing level {level} of {n_level}")
 
             h5level = self.file['/level_'+str(level)+'/']
 
@@ -111,6 +124,8 @@ class AMRh5:
 
             # visit each box in this level
             for box in range(n_boxes):
+
+                print(f"Processing box {box} of {n_boxes} at level {level}")
 
                 # find x, y for this box from bounding box information remembering
                 # level offsets in x,y and add border of ghost cells
@@ -158,6 +173,8 @@ class AMRh5:
         self.data = levelsdata # data for each level as list of arrays [level][box]
 
     def flatten(self,lev=-1,xmin=np.nan,xmax=np.nan,ymin=np.nan,ymax=np.nan):
+
+        print(f"Flattening data to level {lev}")
 
         return flatAMRh5(self,lev,xmin,xmax,ymin,ymax)
     
@@ -213,7 +230,12 @@ class flatAMRh5:
 
         # visit each level (coarest downwards) and box
         for level in range(AMRh5_obj.num_levels):
+
+            print(f"Interpolating level {level} of {AMRh5_obj.num_levels}")
+
             for box in range(AMRh5_obj.num_boxes[level]):
+
+                print(f"Processing box {box} of {AMRh5_obj.num_boxes[level]} at level {level}")
 
                 # print(level,box)
 
@@ -248,6 +270,8 @@ class flatAMRh5:
 
     def findend(self,xx,x,i1,i2):
 
+        print(f"Finding end indices for range ({x[i1]}, {x[i2]}) in array.")
+
         value = np.where((xx >= x[i1]) & (xx <= x[i2]))
 
         return value[0][0]
@@ -262,11 +286,17 @@ class BISICLESh5(AMRh5):
         self.units = None
         self.bisicles_h5_attrs = {}
 
+        print(f"Getting full name and units for variable '{self.variable_name}'.")
+
         self.full_name, self.units = self.get_full_name_units(self.variable_name)
 
         self.open()
 
+        print(f"Reading plotfile header attributes from file: {self.filename}")
+
         self.bisicles_h5_attrs = self.read_plotfile_attrs()
+
+        self.close()
 
     def get_full_name_units(self, vname):
     
