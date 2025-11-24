@@ -5,7 +5,12 @@ import argparse
 import subprocess
 import pandas as pd
 
-from ..constants import ICE_DENSITY, WATER_DENSITY, H_MIN
+####################################################################################
+
+# Set constants
+ICE_DENSITY = 918.0
+WATER_DENSITY = 1028.0
+H_MIN = 1.0e-3
 
 ####################################################################################
 

@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 # import xarray as xr
 # import cartopy.crs as ccrs
 
-def plot_map(flatAMRh5_obj, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolormesh):
+def plot_map(flatAMRh5obj, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolormesh):
     """
     Plots a 2D map from an AMRh5 object using matplotlib.
     
@@ -20,9 +20,9 @@ def plot_map(flatAMRh5_obj, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolorme
     - fig, ax: The matplotlib figure and axis objects.
     """
     
-    x = flatAMRh5_obj.x
-    y = flatAMRh5_obj.y
-    data = flatAMRh5_obj.data
+    x = flatAMRh5obj.x
+    y = flatAMRh5obj.y
+    data = flatAMRh5obj.data
     
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -48,7 +48,7 @@ def plot_map(flatAMRh5_obj, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolorme
     return fig, ax
 
 
-def plot_diff_map(flatAMRh5_obj1, flatAMRh5_obj2, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolormesh):
+def plot_diff_map(flatAMRh5obj1, flatAMRh5obj2, kwargs_map={}, kwargs_colorbar={}, **kwargs_pcolormesh):
 
     """
     Plots the difference between two 2D maps from AMRh5 objects using matplotlib.
@@ -64,9 +64,9 @@ def plot_diff_map(flatAMRh5_obj1, flatAMRh5_obj2, kwargs_map={}, kwargs_colorbar
     - fig, ax: The matplotlib figure and axis objects.
     """
     
-    x = flatAMRh5_obj1.x
-    y = flatAMRh5_obj1.y
-    data_diff = flatAMRh5_obj2.data - flatAMRh5_obj1.data
+    x = flatAMRh5obj1.x
+    y = flatAMRh5obj1.y
+    data_diff = flatAMRh5obj2.data - flatAMRh5obj1.data
     
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -90,24 +90,3 @@ def plot_diff_map(flatAMRh5_obj1, flatAMRh5_obj2, kwargs_map={}, kwargs_colorbar
         ax.set_ylim(kwargs_map['ylim'])
     
     return fig, ax
-
-
-def create_video(figures, output_filename, fps=10):
-    """
-    Creates a video from a list of matplotlib figures.
-    
-    Parameters:
-    - figures: List of matplotlib figure objects.
-    - output_filename: Name of the output video file (e.g., 'output.mp4').
-    - fps: Frames per second for the video.
-    """
-    
-    fig = figures[0]
-    ims = []
-    
-    for figure in figures:
-        im = plt.imshow(figure.canvas.buffer_rgba())
-        ims.append([im])
-    
-    ani = animation.ArtistAnimation(fig, ims, interval=1000/fps, blit=True)
-    ani.save(output_filename, writer='ffmpeg', fps=fps)
