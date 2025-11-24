@@ -39,14 +39,12 @@ class AMRh5:
         
     def close(self):
 
-        print(f"Closing file: {self.filename}")
         if self.file is not None:
             self.file.close()
             self.file = None
 
     def find_var(self, n_components):
 
-        print(f"Finding variable '{self.variable_name}' in the file.")
         count = 0
 
         while count < n_components and self.file.attrs['component_'+str(count)].decode('utf-8') != self.variable_name:
@@ -56,8 +54,6 @@ class AMRh5:
             count = np.nan
             raise KeyError(f"Variable '{self.variable_name}' not found in the HDF5 file.")
         
-        print(f"Variable '{self.variable_name}' found at component index: {count}")
-
         return count
 
     def read_var(self, target_component):
@@ -71,12 +67,12 @@ class AMRh5:
 
         # create stubs for various quantities that will be read these will be
         # constructed using .append
-        levelsdx = []
-        levelsboxes = []
-        levelsoff = []
-        levelsx = []
-        levelsy = []
-        levelsdata = []
+        levelsdx = [None] * n_level
+        levelsboxes = [None] * n_level
+        levelsoff = [None] * n_level
+        levelsx = [None] * n_level
+        levelsy = [None] * n_level
+        levelsdata = [None] * n_level
 
         # crrate a time variable in case it isnt picked up from level info
         time = np.nan
@@ -84,7 +80,7 @@ class AMRh5:
         # visit each level in turn coarse to fine
         for level in range(n_level):
 
-            print(f"Processing level {level} of {n_level}")
+            print(f"Processing level {level}: Level {level+1}/{n_level}")
 
             h5level = self.file['/level_'+str(level)+'/']
 
@@ -118,14 +114,12 @@ class AMRh5:
             n_boxes = len(h5box)
 
             # create stubs for quantities (x,y,data) held in boxes on this level
-            boxesx = []
-            boxesy = []
-            boxesdata = []
+            boxesx = [None] * n_boxes
+            boxesy = [None] * n_boxes
+            boxesdata = [None] * n_boxes
 
             # visit each box in this level
             for box in range(n_boxes):
-
-                print(f"Processing box {box} of {n_boxes} at level {level}")
 
                 # find x, y for this box from bounding box information remembering
                 # level offsets in x,y and add border of ghost cells
@@ -134,8 +128,8 @@ class AMRh5:
                 x = np.arange(h5box['lo_j'][box]-1,h5box['hi_j'][box]+2) * dx + offset
 
                 # add x, y data to evolving level
-                boxesx.append(x)
-                boxesy.append(y)
+                boxesx[box] = x
+                boxesy[box] = y
 
                 # box size
                 nx = len(x)
@@ -150,17 +144,17 @@ class AMRh5:
                 st = en + target_component * nx * ny
                 en = st + nx * ny
 
-                boxesdata.append(h5data[st:en].reshape((nx,ny)))
+                boxesdata[box] = h5data[st:en].reshape((nx,ny))
 
             # once completed all boxes in a level add them to the overall structure
-            levelsx.append(boxesx)
-            levelsy.append(boxesy)
-            levelsdata.append(boxesdata)
+            levelsx[level] = boxesx
+            levelsy[level] = boxesy
+            levelsdata[level] = boxesdata
 
             # also add useful level info such as grid spacing, grid offset and number boxes
-            levelsdx.append(dx)
-            levelsoff.append(offset)
-            levelsboxes.append(n_boxes)
+            levelsdx[level] = dx
+            levelsoff[level] = offset
+            levelsboxes[level] = n_boxes
 
         # pack all of the information into the class
         self.time = time
@@ -180,24 +174,25 @@ class AMRh5:
     
 class flatAMRh5:
 
-    def __init__(self, AMRh5_obj, target_level=-1, xmin=np.nan, xmax=np.nan, ymin=np.nan, ymax=np.nan):
+    def __init__(self, AMRh5Obj, target_level=-1, xmin=np.nan, xmax=np.nan, ymin=np.nan, ymax=np.nan):
 
-        self.fname = AMRh5_obj.filename
-        self.time = AMRh5_obj.time
-        self.variable_name = AMRh5_obj.variable_name
-        self.dx = AMRh5_obj.dx[target_level]
+        self.fname = AMRh5Obj.filename
+        self.time = AMRh5Obj.time
+        self.variable_name = AMRh5Obj.variable_name
+        self.dx = AMRh5Obj.dx[target_level]
         self.x = None
         self.y = None
         self.data = None
 
         # if bounding box not specfied then
         # find based on x,y bounds of the coarsest grid
+        # the reason for doing + dx0 on the min values is due to a single ghost cell layer
 
-        dx0 = AMRh5_obj.dx[0]/2.0
-        xmin = np.min(AMRh5_obj.x[0][:]) + dx0
-        xmax = np.max(AMRh5_obj.x[0][:]) - dx0
-        ymin = np.min(AMRh5_obj.y[0][:]) + dx0
-        ymax = np.max(AMRh5_obj.y[0][:]) - dx0
+        dx0 = AMRh5Obj.dx[0]/2.0
+        xmin = np.min(AMRh5Obj.x[0][:]) + dx0
+        xmax = np.max(AMRh5Obj.x[0][:]) - dx0
+        ymin = np.min(AMRh5Obj.y[0][:]) + dx0
+        ymax = np.max(AMRh5Obj.y[0][:]) - dx0
 
         print(xmin,xmax,ymin,ymax)
 
@@ -205,52 +200,53 @@ class flatAMRh5:
         # xx = np.arange(xmin,xmax+self.dx[lev],self.dx[lev]) + self.offset[lev]
         # yy = np.arange(ymin,ymax+self.dx[lev],self.dx[lev]) + self.offset[lev]
 
-        xx = np.arange(xmin+0.5*AMRh5_obj.dx[target_level],xmax-1.5*AMRh5_obj.dx[target_level],AMRh5_obj.dx[target_level])
-        yy = np.arange(ymin+0.5*AMRh5_obj.dx[target_level],ymax-1.5*AMRh5_obj.dx[target_level],AMRh5_obj.dx[target_level])
+        # stopping at xmax/ymax ensures that the final value is always less than the max value due to less than in arange
+
+        xx = np.arange(xmin+0.5*AMRh5Obj.dx[target_level],xmax,AMRh5Obj.dx[target_level])
+        yy = np.arange(ymin+0.5*AMRh5Obj.dx[target_level],ymax,AMRh5Obj.dx[target_level])
 
         # if bounds have been given find nearest poinst on base grid
         if not np.isnan(xmin):
-            xmin = xx[np.nonzero(xx>xmin)[0][[0]]]
+            xx = xx[np.nonzero(xx>=xmin)]
 
         if not np.isnan(xmax):
-            xmax = xx[np.nonzero(xx<xmax)[0][[-1]]]
+            xx = xx[np.nonzero(xx<=xmax)]
 
         if not np.isnan(ymin):
-            ymin = yy[np.nonzero(yy>ymin)[0][[0]]]
+            yy = yy[np.nonzero(yy>=ymin)]
 
         if not np.isnan(ymax):
-            ymax = yy[np.nonzero(yy<ymax)[0][[-1]]]
+            yy = yy[np.nonzero(yy<=ymax)]
 
-        print(xmin,xmax,ymin,ymax)
         print(xx[0],xx[1],xx[-2],xx[-1])
         print(yy[0],yy[1],yy[-2],yy[-1])
 
         # create suitably sized array to hold flattened data (base grid)
         data = np.zeros((len(xx),len(yy)))
 
-        # visit each level (coarest downwards) and box
-        for level in range(AMRh5_obj.num_levels):
+        # visit each level (coarsest upwards) until you get to the target level, 
+        # and then visit each box
+        for level in range(AMRh5Obj.num_levels if target_level < 0 else target_level+1):
 
-            print(f"Interpolating level {level} of {AMRh5_obj.num_levels}")
+            print(f"Interpolating level {level}. Level {level+1}/{AMRh5Obj.num_levels}")
 
-            for box in range(AMRh5_obj.num_boxes[level]):
-
-                print(f"Processing box {box} of {AMRh5_obj.num_boxes[level]} at level {level}")
+            for box in range(AMRh5Obj.num_boxes[level]):
 
                 # print(level,box)
 
                 # find the i,j corrdinates of the bounds for this box
                 # on the new base grid
 
-                imin = self.findend(xx,AMRh5_obj.x[level][box],0,1)
-                imax = self.findend(xx,AMRh5_obj.x[level][box],-2,-1) + 2
+                imin = self.findend(xx,AMRh5Obj.x[level][box],0,1)
+                imax = self.findend(xx,AMRh5Obj.x[level][box],-2,-1) + 2
 
-                jmin = self.findend(yy,AMRh5_obj.y[level][box],0,1)
-                jmax = self.findend(yy,AMRh5_obj.y[level][box],-2,-1) + 2
+                jmin = self.findend(yy,AMRh5Obj.y[level][box],0,1)
+                jmax = self.findend(yy,AMRh5Obj.y[level][box],-2,-1) + 2
+
                 # create and interpolator for this box
                 # including any ghost cells
-                interp = RegularGridInterpolator((AMRh5_obj.x[level][box],AMRh5_obj.y[level][box]), \
-                                                AMRh5_obj.data[level][box], \
+                interp = RegularGridInterpolator((AMRh5Obj.x[level][box],AMRh5Obj.y[level][box]), \
+                                                AMRh5Obj.data[level][box], \
                                                 method='nearest',bounds_error=False,fill_value=None)
 
                 # create x,y coordinates for poiints on new base grid that fall within this box
@@ -269,8 +265,6 @@ class flatAMRh5:
         self.data = data
 
     def findend(self,xx,x,i1,i2):
-
-        print(f"Finding end indices for range ({x[i1]}, {x[i2]}) in array.")
 
         value = np.where((xx >= x[i1]) & (xx <= x[i2]))
 

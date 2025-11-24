@@ -9,11 +9,10 @@ import AMRh5
 from plot_maps import plot_map
 import create_video
 
-
 # load BISICLES h5 file
 print("Loading BISICLES h5 file for thickness variable...")
 bisicles_file_dHdt = AMRh5.BISICLESh5("/mnt/c/Users/tm17544/OneDrive - University of Bristol/Projects/UKESM/UKESM1p3_initial_states/modern_AIS/hist_forcing/plot.modern.hist.000905.2d.hdf5", 'dThickness/dt')
-flat_dHdt = bisicles_file_dHdt.flatten(lev=-1)
+flat_dHdt = bisicles_file_dHdt.flatten(lev=1)
 
 print("Plotting dH/dt map...")
 # plot dH/dt map
@@ -65,4 +64,3 @@ if FIGS_PLOTTED:
     fps = 2  # frames per second
 
     create_video.create_video(output_video_path, image_patterns, fps)
-
