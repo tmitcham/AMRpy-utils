@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "amrpy-utils"
+description = "Tools for reading, analysing and plotting data from Chombo-based AMR simulation plotfiles"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Tom Mitcham", email = "tom.mitcham@bristol.ac.uk"},
+  { name = "Tony Payne", email = ""},
+  { name = Steph Cornford", email = ""}
+]
+maintainers = [
+  { name = "Tom Mitcham", email = "tom.mitcham@bristol.ac.uk" },
+]
+requires-python = ">=3.10"
+

@@ -1,10 +1,11 @@
-import os
-import pickle
-import matplotlib.colors as col
-from matplotlib import animation
-from matplotlib import pyplot as plt
+"""
+Example script demonstrating the use of AMRpy-utils to load BISICLES h5 files,
+flatten data, and plot thickness maps and differences with grounding lines
+"""
 
-import AMRh5
+import os
+import matplotlib.colors as col
+import amrpy_utils
 from plot_maps import plot_map, plot_diff_map, plot_gls
 
 # load BISICLES h5 file
