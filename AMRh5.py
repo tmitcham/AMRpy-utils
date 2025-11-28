@@ -80,7 +80,7 @@ class AMRh5:
         # visit each level in turn coarse to fine
         for level in range(n_level):
 
-            print(f"Processing level {level}: Level {level+1}/{n_level}")
+            print(f"Reading data on level {level}: Level {level+1}/{n_level}")
 
             h5level = self.file['/level_'+str(level)+'/']
 
@@ -218,8 +218,9 @@ class flatAMRh5:
         if not np.isnan(ymax):
             yy = yy[np.nonzero(yy<=ymax)]
 
-        print(xx[0],xx[1],xx[-2],xx[-1])
-        print(yy[0],yy[1],yy[-2],yy[-1])
+        print(f"Flattened grid size: {len(xx)} x {len(yy)}")
+        print(f"Bounding box for flattened data: xmin={xx[0]}, xmax={xx[-1]}, ymin={yy[0]}, ymax={yy[-1]}")
+        print(f"Grid spacing for flattened data: dx={xx[1]-xx[0]}")
 
         # create suitably sized array to hold flattened data (base grid)
         data = np.zeros((len(xx),len(yy)))
@@ -228,11 +229,9 @@ class flatAMRh5:
         # and then visit each box
         for level in range(AMRh5Obj.num_levels if target_level < 0 else target_level+1):
 
-            print(f"Interpolating level {level}. Level {level+1}/{AMRh5Obj.num_levels}")
+            print(f"Interpolating level {level} onto target grid. Level {level+1}/{AMRh5Obj.num_levels}")
 
             for box in range(AMRh5Obj.num_boxes[level]):
-
-                # print(level,box)
 
                 # find the i,j corrdinates of the bounds for this box
                 # on the new base grid
@@ -374,14 +373,20 @@ class BISICLESh5(AMRh5):
                     attrs[key] = self.file.attrs[key].item()
         
         return attrs
+    
+    def flatten(self,lev=-1,xmin=np.nan,xmax=np.nan,ymin=np.nan,ymax=np.nan):
+
+        print(f"Flattening data to level {lev}")
+
+        return flatBISICLESh5(self,lev,xmin,xmax,ymin,ymax)
 
 
-class flatBISICLESh5:
+class flatBISICLESh5(flatAMRh5):
 
-    def __init__(self, BISICLESh5_obj, target_level=-1, xmin=np.nan, xmax=np.nan, ymin=np.nan, ymax=np.nan):
+    def __init__(self, BISICLESh5Obj, target_level=-1, xmin=np.nan, xmax=np.nan, ymin=np.nan, ymax=np.nan):
 
-        super().__init__(BISICLESh5_obj, target_level, xmin, xmax, ymin, ymax)
+        super().__init__(BISICLESh5Obj, target_level, xmin, xmax, ymin, ymax)
 
-        self.full_name = BISICLESh5_obj.full_name
-        self.units = BISICLESh5_obj.units
-        self.bisicles_h5_attrs = BISICLESh5_obj.bisicles_h5_attrs
+        self.full_name = BISICLESh5Obj.full_name
+        self.units = BISICLESh5Obj.units
+        self.bisicles_h5_attrs = BISICLESh5Obj.bisicles_h5_attrs
