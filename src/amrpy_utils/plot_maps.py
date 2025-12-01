@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as col
 import matplotlib.animation as animation
 
-import AMRh5
-from constants import OCEAN_DENSITY, ICE_DENSITY
+from .AMRh5 import AMRh5, flatAMRh5, BISICLESh5, flatBISICLESh5
+from .constants import OCEAN_DENSITY, ICE_DENSITY
 
 # import xarray as xr
 # import cartopy.crs as ccrs

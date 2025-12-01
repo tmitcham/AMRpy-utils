@@ -1,3 +1,7 @@
+"""
+Tools for reading, analysing and plotting data from Chombo-based AMR simulation plotfiless.
+"""
+
 __version__ = "0.1.0"
 __author__ = "Tom Mitcham"
 
