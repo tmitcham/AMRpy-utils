@@ -2,6 +2,9 @@ import h5py
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 
+# TODO: Read mutliple variables from file in a single call
+#       Read only the levels required (i.e. add level argument to init)
+
 class AMRh5:
     """
     Class to read AMR HDF5 files from Chombo-based models.
@@ -495,9 +498,9 @@ class BISICLESh5(AMRh5):
         self.units = None
         self.bisicles_h5_attrs = {}
 
-        print(f"Getting full name and units for variable '{self.variable_name}'.")
+        #print(f"Getting full name and units for variable '{self.variable_name}'.")
 
-        self.full_name, self.units = self._get_full_name_units(self.variable_name)
+        #self.full_name, self.units = self._get_full_name_units(self.variable_name)
 
         self._open()
 

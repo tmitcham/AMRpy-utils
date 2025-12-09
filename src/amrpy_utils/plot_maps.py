@@ -71,9 +71,7 @@ def plot_diff_map(flatAMRh5obj1, flatAMRh5obj2, kwargs_map=None, kwargs_colorbar
     x = flatAMRh5obj1.x
     y = flatAMRh5obj1.y
     data_diff = flatAMRh5obj2.data - flatAMRh5obj1.data
-
-    b
-    
+        
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(8, 6))
     
